@@ -1,9 +1,14 @@
 package com.surafelmars.designPattern.demo1.controller;
 
+import com.surafelmars.designPattern.demo1.model.DAOFactory;
 import com.surafelmars.designPattern.demo1.model.Model;
+import com.surafelmars.designPattern.demo1.model.Person;
+import com.surafelmars.designPattern.demo1.model.PersonDAO;
 import com.surafelmars.designPattern.demo1.view.LoginFormEvent;
 import com.surafelmars.designPattern.demo1.view.LoginListener;
 import com.surafelmars.designPattern.demo1.view.View;
+
+import java.sql.SQLException;
 
 public class Controller implements LoginListener {
     private Model model;
@@ -14,10 +19,21 @@ public class Controller implements LoginListener {
         this.view = view;
     }
 
+    private PersonDAO personDAO = DAOFactory.getPersonDAO();
+
     @Override
-    public void loginPerformed(LoginFormEvent loginFormEvent) {
-        System.out.println("Login event received Name: " + loginFormEvent.getName() + ", password:  "
-                                    + loginFormEvent.getPassword() +
-                            " Login Time: " + loginFormEvent.getLocalDateTime());
+    public void loginPerformed(LoginFormEvent event) {
+        System.out.println("Login event received Name: " + event.getName() + ", password:  "
+                                    + event.getPassword() +
+                            " Login Time: " + event.getLocalDateTime());
+
+        try {
+            personDAO.addPerson(new Person(1, event.getName(), event.getPassword()));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
+
+
 }

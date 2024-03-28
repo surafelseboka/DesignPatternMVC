@@ -1,32 +1,33 @@
 package com.surafelmars.designPattern.demo1.view;
 
-import com.surafelmars.designPattern.demo1.controller.Controller;
+import com.surafelmars.designPattern.demo1.model.Database;
 import com.surafelmars.designPattern.demo1.model.Model;
 
-import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class View extends JFrame implements ActionListener {
 
   private Model model;
-  private JButton helloButton;
   private JButton okButton;
   private JTextField nameField;
   private JPasswordField passField;
-  private JButton goodByeButton;
+  private JPasswordField repeatPassField;
+
   private LoginListener loginListener;
   public View(Model model) throws HeadlessException {
       super("MVC Demo");
       this.model = model;
 
       // new program
-
       nameField = new JTextField(10);
       passField = new JPasswordField(10);
-      okButton = new JButton("Ok");
+      repeatPassField = new JPasswordField(10);
+      okButton = new JButton("Create User");
 
       setLayout(new GridBagLayout());
 
@@ -60,7 +61,8 @@ public class View extends JFrame implements ActionListener {
       gc.fill=GridBagConstraints.NONE;
 
       add(new JLabel("Password: "), gc);
-      gc.anchor = GridBagConstraints.LAST_LINE_START;
+
+      gc.anchor = GridBagConstraints.LINE_START;
       gc.gridx=2;
       gc.gridy=2;
       gc.weightx = 1;
@@ -69,61 +71,58 @@ public class View extends JFrame implements ActionListener {
       gc.fill=GridBagConstraints.NONE;
 
       add(passField,gc);
-      gc.anchor = GridBagConstraints.LAST_LINE_START;
-      gc.gridx=2;
-      gc.gridy=3;
+
+      gc.anchor = GridBagConstraints.LINE_END;
+      gc.gridx = 1;
+      gc.gridy = 3;
+      gc.weightx = 1;
+      gc.weighty = 1;
+      gc.insets = new Insets(0, 0, 0, 10);
+      gc.fill = GridBagConstraints.NONE;
+
+      add(new JLabel("Repeat password: "), gc);
+
+      gc.anchor = GridBagConstraints.LINE_START;
+      gc.gridx = 2;
+      gc.gridy = 3;
+      gc.weightx = 1;
+      gc.weighty = 1;
+      gc.insets = new Insets(0, 0, 0, 0);
+      gc.fill = GridBagConstraints.NONE;
+
+      add(repeatPassField, gc);
+
+      gc.anchor = GridBagConstraints.FIRST_LINE_START;
+      gc.gridx = 2;
+      gc.gridy = 4;
       gc.weightx = 1;
       gc.weighty = 100;
-      gc.fill=GridBagConstraints.NONE;
+      gc.fill = GridBagConstraints.NONE;
 
-        add(okButton,gc);
-        okButton.addActionListener(this);
+      add(okButton, gc);
 
-      setSize(300,400);
+      okButton.addActionListener(this);
+
+      //Database db = Database.getInstance();
+
+      addWindowListener(new WindowAdapter() {
+          @Override
+          public void windowOpened(WindowEvent e) {
+              try {
+                  Database.getInstance().connect();
+              } catch (Exception ex) {
+                  throw new RuntimeException(ex);
+              }
+          }
+          @Override
+          public void windowClosing(WindowEvent e) {
+              Database.getInstance().disconnect();
+          }
+      });
+
+      setSize(600, 500);
       setDefaultCloseOperation(EXIT_ON_CLOSE);
       setVisible(true);
-
-
-      // end program
-
-//      helloButton = new JButton("Hello!");
-//      goodByeButton = new JButton("GoodBye!");
-//
-//      setLayout(new GridBagLayout());
-//
-//      GridBagConstraints gc = new GridBagConstraints();
-//      gc.anchor = GridBagConstraints.CENTER;
-//      gc.gridx=1;
-//      gc.gridy=1;
-//      gc.weightx = 1;
-//      gc.weighty = 1;
-//      gc.fill=GridBagConstraints.NONE;
-//
-//      add(helloButton,gc);
-//
-//      gc.anchor = GridBagConstraints.CENTER;
-//      gc.gridx=1;
-//      gc.gridy=2;
-//      gc.weightx = 1;
-//      gc.weighty = 1;
-//      gc.fill=GridBagConstraints.NONE;
-//
-//      add(goodByeButton, gc);
-//
-//      helloButton.addActionListener(this);
-//     //goodByeButton.addActionListener(this);
-//     goodByeButton.addActionListener(new ActionListener() {
-//         @Override
-//         public void actionPerformed(ActionEvent e) {
-//             System.out.println("Sorry to see you go.");
-//         }
-//     });
-//
-//
-//      setSize(300,400);
-//      setDefaultCloseOperation(EXIT_ON_CLOSE);
-//      setVisible(true);
-
   }
 
 
@@ -131,15 +130,22 @@ public class View extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
       String password = new String(passField.getPassword());
+      String repeat = new String(repeatPassField.getPassword());
       String name =  nameField.getText();
 
-      if (loginListener != null){
-          loginListener.loginPerformed(new LoginFormEvent(name, password));
+      if (!password.equals(repeat)){
+          JOptionPane.showMessageDialog(this, "Password don't much", "Error",
+                  JOptionPane.ERROR_MESSAGE);
       }
+      fireLoginEvent(new LoginFormEvent(name,password));
 
 
     }
-
+    public void fireLoginEvent(LoginFormEvent event){
+        if (loginListener != null){
+            loginListener.loginPerformed(event);
+        }
+    }
     public void setLoginListener(LoginListener loginListener) {
       this.loginListener = loginListener;
     }
