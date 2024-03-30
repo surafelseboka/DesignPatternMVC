@@ -8,6 +8,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LogDAOTest {
 
+    void test(){
+        System.out.println("Check log class");
+    }
+
     @BeforeEach
     void setUp() {
     }

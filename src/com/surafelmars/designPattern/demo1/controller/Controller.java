@@ -1,39 +1,56 @@
 package com.surafelmars.designPattern.demo1.controller;
 
-import com.surafelmars.designPattern.demo1.model.DAOFactory;
+import com.surafelmars.designPattern.demo1.model.Database;
 import com.surafelmars.designPattern.demo1.model.Model;
 import com.surafelmars.designPattern.demo1.model.Person;
-import com.surafelmars.designPattern.demo1.model.PersonDAO;
-import com.surafelmars.designPattern.demo1.view.LoginFormEvent;
-import com.surafelmars.designPattern.demo1.view.LoginListener;
-import com.surafelmars.designPattern.demo1.view.View;
+import com.surafelmars.designPattern.demo1.view.*;
 
 import java.sql.SQLException;
+import java.util.List;
 
-public class Controller implements LoginListener {
-    private Model model;
+
+public class Controller implements CreateUserListener, SaveListener,
+        AppListener {
     private View view;
+    private Model model;
 
-    public Controller(Model model, View view){
-        this.model = model;
+    public Controller(View view, Model model) {
         this.view = view;
+        this.model = model;
     }
-
-    private PersonDAO personDAO = DAOFactory.getPersonDAO();
 
     @Override
-    public void loginPerformed(LoginFormEvent event) {
-        System.out.println("Login event received Name: " + event.getName() + ", password:  "
-                                    + event.getPassword() +
-                            " Login Time: " + event.getLocalDateTime());
-
-        try {
-            personDAO.addPerson(new Person(1, event.getName(), event.getPassword()));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
+    public void onUserCreated(CreateUserEvent event) {
+        model.addPerson(new Person(event.getName(), event.getPassword()));
     }
 
+    @Override
+    public void onSave() {
+        try {
+            model.save();
+        } catch (Exception e) {
+            view.showError("Error saving to database.");
+        }
+    }
+
+    @Override
+    public void onOpen() {
+        try {
+            Database.getInstance().connect();
+        } catch (Exception e) {
+            view.showError("Cannot connect to database.");
+        }
+
+        try {
+            model.load();
+        } catch (Exception e) {
+            view.showError("Error loading data from database.");
+        }
+    }
+
+    @Override
+    public void onClose() {
+        Database.getInstance().disconnect();
+    }
 
 }

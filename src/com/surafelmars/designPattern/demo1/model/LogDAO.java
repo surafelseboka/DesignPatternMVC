@@ -2,13 +2,8 @@ package com.surafelmars.designPattern.demo1.model;
 
 import java.util.List;
 
-public class LogDAO {
+public interface LogDAO {
+    void addEntry(Log log);
 
-    public void addEntry(Log log){
-
-    }
-
-    public List<Log> getEntries(int number){
-        return null;
-    }
+    List<Log> getEntries(int number);
 }
